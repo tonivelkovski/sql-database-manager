@@ -1,0 +1,47 @@
+name: Build and Test CI Workflow
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+    
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ./SQL-Database-Manager/
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.5.2
+        
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
+      
+      - name: Setup VSTest
+        uses: darenm/Setup-VSTest@v1
+        
+      - name: Restore NuGet Packages
+        run: nuget restore
+        
+      - name: Build Solution
+        run: msbuild /p:platform="Any CPU" /p:configuration=Release
+        
+      - name: Run Unit tests
+        run: vstest.console.exe "SQL Database Generator.UnitTests\bin\Release\net48\SQL Database Generator.UnitTests.dll"
+        
+      - name: Run Integration tests
+        run: vstest.console.exe "SQL Database Generator.IntegrationTests\bin\Release\net48\SQL Database Generator.IntegrationTests.dll"
+      
+      - name: Publish application
+        run: |
+          cd "SQL Database Generator"
+          msbuild /t:publish /p:configuration=Release /p:PublishDir=publish/
+        
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: SqlDatabaseGenerator-Setup
+          path: "SQL Database Generator/publish/"

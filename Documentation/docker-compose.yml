@@ -1,0 +1,20 @@
+version: '3.9'
+
+networks:
+  default:
+    name: sql-db-manager-network
+
+volumes:
+  mssql_vol:
+    name: mssql-data
+
+services:
+  mssql-server:
+    image: mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: mojaJakaL=Z!NKA
+    ports:
+      - 1433:1433
+    volumes:
+      - mssql_vol:/var/opt/mssql
